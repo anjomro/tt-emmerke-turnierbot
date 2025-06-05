@@ -1,0 +1,13 @@
+[project]
+name = "tt-emmerke-turnierbot"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.9"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "google-genai>=1.18.0",
+    "httpx>=0.28.1",
+    "peewee>=3.18.1",
+    "python-telegram-bot>=22.1",
+    "thefuzz>=0.22.1",
+]
