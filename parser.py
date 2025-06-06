@@ -171,7 +171,6 @@ async def fetch_active_tables():
                     "Klasse": cols[3].text.strip(),
                     "Ergebnis": cols[4].text.strip()
                 }
-                ended_games.append(game_data)
     else:
         print("No ended games found.")
 
@@ -250,7 +249,7 @@ async def fetch_teilnehmer():
                     id = teilnehmer.id  # Use existing ID
                 except Teilnehmer.DoesNotExist:
                     # If no existing participant found, set id to not used value starting from 1000000
-                    id = 1000000
+                    id = 1000
                     found_id = True
                     while found_id:
                         try:

@@ -1,0 +1,14 @@
+services:
+  server:
+    image: ghcr.io/anjomro/tt-emmerke-turnierbot:latest
+    pull_policy: never
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: always
+    environment:
+      DB_PATH: /app/db/data.db
+    env_file:
+      - .env
+    volumes:
+      - ./db/:/app/db/

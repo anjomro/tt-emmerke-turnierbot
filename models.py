@@ -1,8 +1,10 @@
 from datetime import datetime
 
 from peewee import *
+import os
 
-db = SqliteDatabase('turnier.db')
+DB_PATH = os.getenv("DB_PATH", "./db/turnier.db")
+db = SqliteDatabase(DB_PATH)
 
 class BaseModel(Model):
     class Meta:
