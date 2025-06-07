@@ -231,6 +231,8 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     )
                     print(f"Found new ended game: {spiel}")
                 if not spiel.end:
+                    if not spiel.tisch:
+                        spiel.tisch = -1
                     # Set end datetime
                     spiel.end = datetime.combine(datetime.today(), end_game_time)
                     spiel.ergebnis_satz = result_sets
