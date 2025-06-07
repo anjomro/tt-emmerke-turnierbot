@@ -356,8 +356,8 @@ def get_spiele_fuer_teilnehmer(teilnehmer_id: int) -> List[Dict[str, str]]:
             "end": spiel.end.isoformat() if spiel.end else None,
             "konkurrenz": spiel.konkurrenz.name,
             "typ": spiel.typ,
-            "teilnehmer_hat_gewonnen": hat_gewonnen(spiel, teilnehmer),
-            "gegner_hat_gewonnen": not hat_gewonnen(spiel, teilnehmer),
+            "teilnehmer_hat_gewonnen": hat_gewonnen(spiel, teilnehmer) if spiel.ergebnis_satz else None,
+            "gegner_hat_gewonnen": not hat_gewonnen(spiel, teilnehmer) if spiel.ergebnis_satz else None,
             "ergebnis_satz": spiel.ergebnis_satz if spiel.ergebnis_satz else None,
             "ergebnis_punkte": spiel.ergebnis_punkte if spiel.ergebnis_punkte else None
         } for spiel in spiele]
