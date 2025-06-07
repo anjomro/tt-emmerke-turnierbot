@@ -321,7 +321,7 @@ def get_spiele_fuer_teilnehmer(teilnehmer_id: int) -> List[Dict[str, str]]:
             "start": spiel.start.isoformat(),
             "end": spiel.end.isoformat() if spiel.end else None,
             "konkurrenz": spiel.konkurrenz.name,
-            "typ": spiel.typ
+            "typ": spiel.typ,
             "ergebnis_satz": spiel.ergebnis_satz if spiel.ergebnis_satz else None,
             "ergebnis_punkte": spiel.ergebnis_punkte if spiel.ergebnis_punkte else None
         } for spiel in spiele]
