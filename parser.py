@@ -1,12 +1,16 @@
 from typing import Dict
-
+import os
 import httpx
 from bs4 import BeautifulSoup
+from telegram.ext import ContextTypes
+from thefuzz import process
 
 from models import Konkurrenz, Teilnehmer, Verein, Spiel
 from notify import notify_new_spiel, notify_game_result
 
-base_url = "https://www.httv.de/mktt_getPage.php?url=012/47._internationales_sandershaeuser_tischtennis-pfingstturnier_2024-05-17/"
+
+base_url = os.getenv("BASE_URL", "https://www.httv.de/mktt_getPage.php?url=012/48._internationales_sandershaeuser_tischtennis-pfingstturnier_2025-06-06/")
+#base_url = "https://www.httv.de/mktt_getPage.php?url=012/47._internationales_sandershaeuser_tischtennis-pfingstturnier_2024-05-17/"
 #base_url = "https://www.httv.de/mktt_getPage.php?url=012/48._internationales_sandershaeuser_tischtennis-pfingstturnier_2025-06-06/"
 
 active_tables_url = f"{base_url}active_tables.html"
@@ -68,7 +72,7 @@ async def get_teilnehmer_by_name(name: str) -> Teilnehmer:
         raise ValueError(f"Invalid name format: {name}. Expected format is 'Nachname, Vorname'.")
 
 
-async def fetch_active_tables():
+async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
     '''
     Parse active table
     <TABLE class='mktt_active_tables'>
@@ -133,7 +137,7 @@ async def fetch_active_tables():
                         (Spiel.spieler2 == spieler2_obj) &
                         (Spiel.konkurrenz == konkurrenz)
                     )
-                    print(f"Found existing game: {spiel}")
+                    # print(f"Found existing game: {spiel}")
                 except Spiel.DoesNotExist:
                     spiel = Spiel.create(
                         tisch=tisch,
@@ -156,6 +160,7 @@ async def fetch_active_tables():
                 active_tables.append(table_data)
     else:
         print("No active tables found.")
+    ended_games = []
 
     # Parse ended games
     ended_games_section = soup.find('table', class_='mktt_group_single_results')
@@ -215,6 +220,9 @@ async def fetch_teilnehmer():
     konkurrenzen = soup.find_all('span', class_='mktt_grouptype')
     for konkurrenz in konkurrenzen:
         name = html_to_unicode(konkurrenz.text.strip())
+        name = name.split(":")[0].strip()  # Remove any additional text after the colon
+        # Remove "Einzel" or "Doppel" from the name if present
+        name = name.replace(" Einzel", "").replace("Doppelkonkurrenz", "konkurrenz").strip()
         # Get the corresponding Konkurrenz object
         try:
             konkurrenz_obj = await get_konkurrenz_by_name(name)

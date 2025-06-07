@@ -8,6 +8,6 @@ dependencies = [
     "google-genai>=1.18.0",
     "httpx>=0.28.1",
     "peewee>=3.18.1",
-    "python-telegram-bot>=22.1",
+    "python-telegram-bot[job-queue]>=22.1",
     "thefuzz>=0.22.1",
 ]

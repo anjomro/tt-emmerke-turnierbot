@@ -9,6 +9,7 @@ from telegram._utils.types import ODVInput
 from telegram.ext import ApplicationBuilder, MessageHandler, filters
 from models import init_db
 from parser import *
+from parser import fetch_active_tables
 from ai import answer
 
 TELEGRAM_API_KEY = os.environ["TELEGRAM_API_KEY"]
@@ -27,6 +28,11 @@ def main():
     app = ApplicationBuilder().token(TELEGRAM_API_KEY).build()
 
     app.add_handler(MessageHandler(filters.ALL, answer))
+
+    job_queue = app.job_queue
+
+    # Schedule the task to run every 60 seconds (set interval as needed)
+    job_queue.run_repeating(fetch_active_tables, interval=5, first=1)
     app.run_polling()
 
 
