@@ -211,10 +211,15 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     print(f"Error finding competition for klasse {klasse}: {e}")
 
                 try:
-                    spiel = Spiel.get(
+                    spiele = Spiel.select(
                         (Spiel.spieler1 == spieler1_obj) &
-                        (Spiel.spieler2 == spieler2_obj)
+                        (Spiel.spieler2 == spieler2_obj) &
+                        (Spiel.konkurrenz == konkurrenz)
                     )
+                    if spiele:
+                        spiel = spiele[0]
+                    else:
+                        raise Spiel.DoesNotExist
                     # print(f"Found existing game: {spiel}")
                 except Spiel.DoesNotExist:
                     spiel = Spiel.create(
