@@ -131,6 +131,19 @@ def suche_teilnehmer_nach_name(name: str) -> Dict[int, str]:
     return result
 
 
+def liste_alle_vereine_auf() -> Dict[int, str]:
+    """
+    Gibt alle Vereine mit ihrer ID zurück
+    :return: Dictionary mit ID: Vereinsname
+    """
+    print("F: liste alle vereine auf")
+    vereine = Verein.select()
+    verein_dict: Dict[int, str] = {}
+    for verein in vereine:
+        verein_dict[verein.id] = verein.name
+    return verein_dict
+
+
 def liste_teilnehmer_aus_emmerke_auf() -> List[Dict[str, str]]:
     """
     Gibt eine Liste von allen Teilnehmern aus dem Verein Emmerke zurück.
@@ -201,6 +214,26 @@ def set_teilnehmer_factory(chat: Chat) -> Callable[[int], str]:
 
     return setze_teilnehmer
 
+def set_verein_factory(chat: Chat) -> Callable[[int], str]:
+    def setze_verein(verein_id: int) -> str:
+        """
+        Setzt den Verein für den der Nutzer über alle Spiele benachrichtigt werden will
+        :param verein_id: ID des vereins
+        :return: Message if successful
+        """
+        try:
+            verein = Verein.get(Verein.id == verein_id)
+            chat.verein_notification = verein
+            chat.save()
+            if chat.nickname:
+                print(f"F: Set Verein for chat {chat.nickname} to {verein.name}")
+            else:
+                print(f"F: Set Verein for chat {chat.chat_id} to {verein.name}")
+            return f"Verein für Benachrichtigungen gesetzt: {verein.name}"
+        except Verein.DoesNotExist:
+            print(f"F: Set Verein -> Not Found (id: {verein_id})")
+            return "Verein nicht gefunden. Bitte überprüfe die ID."
+    return setze_verein
 
 def get_teilnehmer_factory(chat: Chat) -> Callable[[], Union[Dict[str, str], str]]:
     def get_teilnehmer() -> Union[Dict[str, str], str]:
@@ -260,7 +293,8 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                    get_teilnehmer_factory(chat),
                    liste_alle_teilnehmer_auf,
                    liste_konkurrenzen_fuer_teilnehmer_auf,
-                   suche_teilnehmer_nach_name
+                   suche_teilnehmer_nach_name,
+                   set_verein_factory(chat),
                    ],
         ),
     )

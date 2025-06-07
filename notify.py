@@ -3,7 +3,7 @@ import os
 from google import genai
 from google.genai import types
 
-from ai import get_chat_history
+from ai import get_chat_history, save_message
 from models import Spiel, Chat, Teilnehmer
 from ttr_emoji import ttr_to_emoji
 
@@ -69,11 +69,46 @@ async def notify_new_spiel(spiel: Spiel):
             model=NOTIFICATION_MODEL,
             contents=instructions,
         )
-        await telegram_bot.send_message(chat_id=chat.chat_id, text=response.text)
-        spiel.notifications_sent = True
-        spiel.save()
+        msg = await telegram_bot.send_message(chat_id=chat.chat_id, text=response.text)
+        await save_message(msg)
+
 
         print(f"Notify chat {chat.name} about new game: {spieler1} vs {spieler2} in {spiel.konkurrenz.name} at Tisch {spiel.tisch}.")
+    await notify_verein(spiel)
+
+    spiel.notifications_sent = True
+    spiel.save()
+
+async def notify_verein(spiel: Spiel):
+    """
+    Notify the Vereins about a new game.
+    This function should be called whenever a new game is created.
+    """
+
+    spieler1 = Teilnehmer.get(Teilnehmer.id == spiel.spieler1.id)
+    spieler2 = Teilnehmer.get(Teilnehmer.id == spiel.spieler2.id)
+
+    # Get Vereins from Spiel
+    verein1 = spiel.spieler1.verein
+    verein2 = spiel.spieler2.verein
+
+    # Get all chats which monitor one of the Vereins
+    chats = Chat.select().where(
+        (Chat.verein_notification == verein1) | (Chat.verein_notification == verein2)
+    ).execute()
+    emoji_spieler1 = ttr_to_emoji(spieler1.qttr)
+    emoji_spieler2 = ttr_to_emoji(spieler2.qttr)
+    message = f"Neues Spiel:\n {spieler1.vorname} {spieler1.nachname} {emoji_spieler1} ({verein1.name})\nvs\n{spieler2.vorname} {spieler2.nachname} {emoji_spieler2} ({verein2.name}) in {spiel.konkurrenz.name} am Tisch {spiel.tisch}."
+    for chat in chats:
+        if chat.me != spieler1 and chat.me != spieler2:
+            # Here you would implement the logic to send a message to the chat.
+            # For example, using a Telegram bot or another messaging service.
+            msg = await telegram_bot.send_message(chat_id=chat.chat_id, text=message)
+            await save_message(msg)
+
+        print(f"Notify chat {chat.name} about new game: {spieler1} vs {spieler2} in {spiel.konkurrenz.name} at Tisch {spiel.tisch}.")
+
+
 
 async def notify_game_result(spiel: Spiel):
     """

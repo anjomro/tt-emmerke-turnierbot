@@ -148,7 +148,11 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     )
                     print(f"Created new game: {spiel}")
                 # Notify about the new game
-                await notify_new_spiel(spiel)
+                try:
+                    await notify_new_spiel(spiel)
+                except Exception as e:
+                    print(f"---- Error notifying about new game {spiel}: {e}")
+                    continue
 
                 table_data = {
                     "Tisch": cols[0].text.strip(),
