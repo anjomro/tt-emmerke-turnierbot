@@ -301,6 +301,35 @@ def get_aktive_tische() -> List[Dict[str, str]]:
     return aktive_spiele
 
 
+def get_spiele_fuer_teilnehmer(teilnehmer_id: int) -> List[Dict[str, str]]:
+    """
+    Gibt alle Spiele für einen Teilnehmer zurück.
+    :param teilnehmer_id: ID des Teilnehmers, dessen Spiele zurückgegeben werden sollen.
+    :return: Liste von Dictionaries mit den Spielen des Teilnehmers.
+    """
+    try:
+        teilnehmer = Teilnehmer.get(Teilnehmer.id == teilnehmer_id)
+        spiele = Spiel.select().where(
+            (Spiel.spieler1 == teilnehmer) | (Spiel.spieler2 == teilnehmer)
+        ).order_by(Spiel.start.desc())
+        print(f"F: get spiele fuer teilnehmer: {teilnehmer.vorname} {teilnehmer.nachname}")
+        return [{
+            "id": spiel.id,
+            "tisch": spiel.tisch,
+            "gegner": f"{spiel.spieler2.vorname} {spiel.spieler2.nachname}" if spiel.spieler1 == teilnehmer else f"{spiel.spieler1.vorname} {spiel.spieler1.nachname}",
+            "gegner_id": spiel.spieler2.id if spiel.spieler1 == teilnehmer else spiel.spieler1.id,
+            "start": spiel.start.isoformat(),
+            "end": spiel.end.isoformat() if spiel.end else None,
+            "konkurrenz": spiel.konkurrenz.name,
+            "typ": spiel.typ
+            "ergebnis_satz": spiel.ergebnis_satz if spiel.ergebnis_satz else None,
+            "ergebnis_punkte": spiel.ergebnis_punkte if spiel.ergebnis_punkte else None
+        } for spiel in spiele]
+    except Teilnehmer.DoesNotExist:
+        print(f"F: get spiele fuer teilnehmer -> Not Found (id: {teilnehmer_id})")
+        return []
+
+
 
 def nickname_factory(chat: Chat) -> Callable[[str], str]:
     def setze_spitznamen(spitzname: str) -> str:
@@ -342,7 +371,8 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                    set_verein_factory(chat),
                    liste_alle_vereine_auf,
                    get_teilnehmer_infos,
-                   get_aktive_tische
+                   get_aktive_tische,
+                   get_spiele_fuer_teilnehmer
                    ],
         ),
     )
