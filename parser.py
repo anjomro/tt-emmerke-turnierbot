@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict
 import os
 import httpx
@@ -173,13 +174,65 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
         for row in rows:
             cols = row.find_all('td')
             if len(cols) == 5:  # Ensure we have the right number of columns
-                game_data = {
-                    "Uhrzeit": cols[0].text.strip(),
-                    "Spieler 1": cols[1].text.strip(),
-                    "Spieler 2": cols[2].text.strip(),
-                    "Klasse": cols[3].text.strip(),
-                    "Ergebnis": cols[4].text.strip()
-                }
+                spieler1 = html_to_unicode(cols[1].text.strip())
+                spieler2 = html_to_unicode(cols[2].text.strip())
+                klasse = html_to_unicode(cols[3].text.strip())
+                klasse_link = cols[3].find('a').get('href') if cols[3].find('a') else None
+                typ = html_to_unicode(cols[4].text.strip())
+                end_game_time = datetime.strptime(cols[0].text.strip(), '%H:%M').time()
+                result_sets = html_to_unicode(cols[4].text.strip())
+                # Parse result points from title attribute
+                # Example: <SPAN class='mktt_ko_ergebnisse' title='11 : 6
+                #         11 : 6
+                #         11 : 8'>3 : 0</SPAN>
+                result_points = html_to_unicode(cols[4].find('span', class_='mktt_ko_ergebnisse').get('title', '')).strip()
+                # Find konkurrenz by link
+                konkurrenz = None
+                if klasse_link:
+                    try:
+                        konkurrenz = Konkurrenz.get(Konkurrenz.link == klasse_link)
+                    except Konkurrenz.DoesNotExist:
+                        print(f"Konkurrenz not found for link: {klasse_link}")
+                if not konkurrenz:
+                    try:
+                        konkurrenz = get_konkurrenz_by_name(klasse)
+                    except ValueError as e:
+                        print(f"Error finding competition for klasse {klasse}: {e}")
+                        continue
+                try:
+                    spieler1_obj = await get_teilnehmer_by_name(spieler1)
+                    spieler2_obj = await get_teilnehmer_by_name(spieler2)
+                except ValueError as e:
+                    print(f"Error finding participants: {e}")
+                    continue
+                try:
+                    konkurrenz = get_konkurrenz_by_name(klasse)
+                except ValueError as e:
+                    print(f"Error finding competition for klasse {klasse}: {e}")
+
+                try:
+                    spiel = Spiel.get(
+                        (Spiel.spieler1 == spieler1_obj) &
+                        (Spiel.spieler2 == spieler2_obj)
+                    )
+                    # print(f"Found existing game: {spiel}")
+                except Spiel.DoesNotExist:
+                    spiel = Spiel.create(
+                        tisch=0,
+                        spieler1=spieler1_obj,
+                        spieler2=spieler2_obj,
+                        konkurrenz=konkurrenz,
+                        typ=typ
+                    )
+                    print(f"Found new ended game: {spiel}")
+                if not spiel.end:
+                    # Set end datetime
+                    spiel.end = datetime.combine(datetime.today(), end_game_time)
+                    spiel.ergebnis_satz = result_sets
+                    spiel.ergebnis_punkte = result_points
+                    spiel.save()
+                    print(f"Saved ended game: {spiel.spieler1.nachname} - {spiel.spieler2.nachname} in {spiel.konkurrenz.name} with result {spiel.ergebnis_satz}")
+
     else:
         print("No ended games found.")
 
