@@ -300,12 +300,45 @@ def get_aktive_tische() -> List[Dict[str, str]]:
             })
     return aktive_spiele
 
+def spieler1_gewonnen(saetze: str) -> bool:
+    """
+    Überprüft, ob Spieler 1 gewonnen hat.
+    :param saetze: Das Ergebnis der Sätze im Format "3:0" oder "2:1".
+    :return: True, wenn Spieler 1 gewonnen hat, sonst False.
+    """
+    if not saetze:
+        return False
+    ergebnisse = saetze.split(":")
+    if len(ergebnisse) != 2:
+        return False
+    try:
+        spieler1_satz = int(ergebnisse[0].strip())
+        spieler2_satz = int(ergebnisse[1].strip())
+    except ValueError:
+        print(f"F: Invalid Satz format {saetze}")
+        return False
+    return spieler1_satz > spieler2_satz
+
+def hat_gewonnen(spiel: Spiel, teilnehmer: Teilnehmer) -> bool:
+    """
+    Überprüft, ob der gegebene Teilnehmer das Spiel gewonnen hat.
+    :param spiel: Das Spiel, dessen Ergebnis überprüft werden soll.
+    :param teilnehmer: Der Teilnehmer, dessen Gewinnstatus überprüft werden soll.
+    :return: True, wenn der Teilnehmer gewonnen hat, sonst False.
+    """
+    if not spiel.ergebnis_satz:
+        return False
+    if spiel.spieler1 == teilnehmer:
+        return spieler1_gewonnen(spiel.ergebnis_satz)
+    else:
+        return not spieler1_gewonnen(spiel.ergebnis_satz)
+
 
 def get_spiele_fuer_teilnehmer(teilnehmer_id: int) -> List[Dict[str, str]]:
     """
     Gibt alle Spiele für einen Teilnehmer zurück.
     :param teilnehmer_id: ID des Teilnehmers, dessen Spiele zurückgegeben werden sollen.
-    :return: Liste von Dictionaries mit den Spielen des Teilnehmers.
+    :return: Liste von Dictionaries mit den Spielen des Teilnehmers. Bitte beachte, dass das ergebnis den spieler1 zuerst nennt.
     """
     try:
         teilnehmer = Teilnehmer.get(Teilnehmer.id == teilnehmer_id)
@@ -322,6 +355,8 @@ def get_spiele_fuer_teilnehmer(teilnehmer_id: int) -> List[Dict[str, str]]:
             "end": spiel.end.isoformat() if spiel.end else None,
             "konkurrenz": spiel.konkurrenz.name,
             "typ": spiel.typ,
+            "teilnehmer_hat_gewonnen": hat_gewonnen(spiel, teilnehmer),
+            "gegner_hat_gewonnen": not hat_gewonnen(spiel, teilnehmer),
             "ergebnis_satz": spiel.ergebnis_satz if spiel.ergebnis_satz else None,
             "ergebnis_punkte": spiel.ergebnis_punkte if spiel.ergebnis_punkte else None
         } for spiel in spiele]
