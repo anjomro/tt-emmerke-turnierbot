@@ -57,14 +57,21 @@ async def notify_new_spiel(spiel: Spiel):
                          "Die Emojis geben an wie stark der Spieler und der Gegner ist."
                          "Gib das Emoji des Gegners auf jeden Fall nach dem Namen des Gegners an!\n")
 
+        muss_holen = False
         if chat.me.id == spieler1.id:
             gegner = spieler2
+            muss_holen = True
         else:
             gegner = spieler1
+            muss_holen = False
         emoji_gegner = ttr_to_emoji(gegner.qttr)
         me_emoji = ttr_to_emoji(chat.me.qttr) if chat.me else ""
         instructions += f"Dein Chatpartner ({me_emoji} QTTR: {chat.me.qttr}) spielt gegen {gegner.vorname} {gegner.nachname} ({emoji_gegner} QTTR: {gegner.qttr}) in {spiel.konkurrenz.name} am Tisch {spiel.tisch}.\n"
-        instructions += "\nInformiere deinen Chatpartner in einer lockeren Nachricht über das neue Spiel von ihm/ihr, insbesondere den Gegner und Tisch."
+        instructions += "\nInformiere deinen Chatpartner in einer lockeren Nachricht über das neue Spiel von ihm/ihr, insbesondere den Gegner und Tisch. \n"
+        if muss_holen:
+            instructions += "Erwähne auch, dass er/sie den Becher abholen muss!"
+        else:
+            instructions += f"Erwähne auch, dass er/sie direkt zum Tisch {spiel.tisch} gehen kann, der Gegner holt den Becher!"
         response = client.models.generate_content(
             model=NOTIFICATION_MODEL,
             contents=instructions,
