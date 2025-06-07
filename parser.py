@@ -223,7 +223,7 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     # print(f"Found existing game: {spiel}")
                 except Spiel.DoesNotExist:
                     spiel = Spiel.create(
-                        tisch=0,
+                        tisch=-1,  # Tisch is not relevant for ended games
                         spieler1=spieler1_obj,
                         spieler2=spieler2_obj,
                         konkurrenz=konkurrenz,
