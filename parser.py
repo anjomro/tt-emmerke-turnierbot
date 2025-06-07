@@ -217,7 +217,7 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                         (Spiel.konkurrenz == konkurrenz)
                     )
                     if spiele.exists():
-                        spiel = spiele[0]
+                        spiel = spiele.first()
                     else:
                         raise Spiel.DoesNotExist
                     # print(f"Found existing game: {spiel}")
