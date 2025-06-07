@@ -212,9 +212,9 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
 
                 try:
                     spiele = Spiel.select(
-                        (Spiel.spieler1 == spieler1_obj) &
-                        (Spiel.spieler2 == spieler2_obj) &
-                        (Spiel.konkurrenz == konkurrenz)
+                        (Spiel.spieler1_id == spieler1_obj.id) &
+                        (Spiel.spieler2_id == spieler2_obj.id) &
+                        (Spiel.konkurrenz_id == konkurrenz.id)
                     )
                     if spiele.count() > 0:
                         spiel = spiele.first()
@@ -224,8 +224,8 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                 except Spiel.DoesNotExist:
                     spiel = Spiel.create(
                         tisch=-1,  # Tisch is not relevant for ended games
-                        spieler1=spieler1_obj,
-                        spieler2=spieler2_obj,
+                        spieler1_id=spieler1_obj.id,
+                        spieler2_id=spieler2_obj.id,
                         konkurrenz=konkurrenz,
                         typ=typ
                     )
