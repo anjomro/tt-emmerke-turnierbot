@@ -10,7 +10,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Messa
 from google import genai
 from thefuzz import process
 
-from models import Chat, ChatMessage, Teilnehmer, Verein
+from models import Chat, ChatMessage, Teilnehmer, Verein, Spiel
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
@@ -277,6 +277,30 @@ def get_teilnehmer_factory(chat: Chat) -> Callable[[], Union[Dict[str, str], str
 
     return get_teilnehmer
 
+def get_aktive_tische() -> List[Dict[str, str]]:
+    """
+    Gibt die aktiven Tische zurück
+    :return: Liste aller aktiven Spiele mit tischnr, spieler1_name, spieler1_id, spieler2_name, spieler2_id, konkurrenz_id, konkurrenz_name und typ
+    """
+    # Find newest 20 games
+    spiele = Spiel.select().order_by(Spiel.start.desc()).limit(20)
+    print("F: get aktive tische")
+    aktive_spiele = []
+    for spiel in spiele:
+        if not spiel.end:
+            aktive_spiele.append({
+                "tischnr": spiel.tisch,
+                "spieler1_name": f"{spiel.spieler1.vorname} {spiel.spieler1.nachname}",
+                "spieler1_id": spiel.spieler1.id,
+                "spieler2_name": f"{spiel.spieler2.vorname} {spiel.spieler2.nachname}",
+                "spieler2_id": spiel.spieler2.id,
+                "konkurrenz_id": spiel.konkurrenz.id,
+                "konkurrenz_name": spiel.konkurrenz.name,
+                "typ": spiel.typ
+            })
+    return aktive_spiele
+
+
 
 def nickname_factory(chat: Chat) -> Callable[[str], str]:
     def setze_spitznamen(spitzname: str) -> str:
@@ -317,7 +341,8 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                    suche_teilnehmer_nach_name,
                    set_verein_factory(chat),
                    liste_alle_vereine_auf,
-                   get_teilnehmer_infos
+                   get_teilnehmer_infos,
+                   get_aktive_tische
                    ],
         ),
     )
