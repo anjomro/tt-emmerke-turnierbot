@@ -206,7 +206,7 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     print(f"Error finding participants: {e}")
                     continue
                 try:
-                    konkurrenz = get_konkurrenz_by_name(klasse)
+                    konkurrenz = await get_konkurrenz_by_name(klasse)
                 except ValueError as e:
                     print(f"Error finding competition for klasse {klasse}: {e}")
 
@@ -216,7 +216,7 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                         (Spiel.spieler2 == spieler2_obj) &
                         (Spiel.konkurrenz == konkurrenz)
                     )
-                    if spiele.exists():
+                    if spiele.count() > 0:
                         spiel = spiele.first()
                     else:
                         raise Spiel.DoesNotExist
