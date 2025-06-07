@@ -131,6 +131,26 @@ def suche_teilnehmer_nach_name(name: str) -> Dict[int, str]:
         result[t_id] = name
     return result
 
+def get_teilnehmer_infos(teilnehmer_id: int) -> Dict[str, str]:
+    """
+    Gibt die Informationen (Vorname, Name, QTTR, Vereinsname, Vereins-ID) eines Teilnehmers zurück.
+    :param teilnehmer_id: ID des Teilnehmers, dessen Informationen zurückgegeben werden sollen.
+    :return: Dict mit vorname, nachname, qttr, verein_name und verein_id des Teilnehmers.
+    """
+    try:
+        teilnehmer = Teilnehmer.get(Teilnehmer.id == teilnehmer_id)
+        print(f"F: get teilnehmer infos: {teilnehmer.vorname} {teilnehmer.nachname}")
+        return {
+            "vorname": teilnehmer.vorname,
+            "nachname": teilnehmer.nachname,
+            "qttr": teilnehmer.qttr,
+            "verein_name": teilnehmer.verein.name,
+            "verein_id": teilnehmer.verein.id
+        }
+    except Teilnehmer.DoesNotExist:
+        print(f"F: get teilnehmer infos -> Not Found (id: {teilnehmer_id})")
+        return {"error": "Teilnehmer nicht gefunden. Bitte überprüfe die ID."}
+
 
 def liste_alle_vereine_auf() -> Dict[int, str]:
     """
@@ -296,7 +316,8 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                    liste_konkurrenzen_fuer_teilnehmer_auf,
                    suche_teilnehmer_nach_name,
                    set_verein_factory(chat),
-                   liste_alle_vereine_auf
+                   liste_alle_vereine_auf,
+                   get_teilnehmer_infos
                    ],
         ),
     )
