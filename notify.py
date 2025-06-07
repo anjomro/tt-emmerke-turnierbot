@@ -66,7 +66,7 @@ async def notify_new_spiel(spiel: Spiel):
             muss_holen = False
         emoji_gegner = ttr_to_emoji(gegner.qttr)
         me_emoji = ttr_to_emoji(chat.me.qttr) if chat.me else ""
-        instructions += f"Dein Chatpartner ({me_emoji} QTTR: {chat.me.qttr}) spielt gegen {gegner.vorname} {gegner.nachname} ({emoji_gegner} QTTR: {gegner.qttr}) in {spiel.konkurrenz.name} am Tisch {spiel.tisch}.\n"
+        instructions += f"Dein Chatpartner ({me_emoji} QTTR: {chat.me.qttr}) spielt gegen {gegner.vorname} {gegner.nachname} ({emoji_gegner} QTTR: {gegner.qttr}) in {spiel.konkurrenz.name} ({spiel.typ}) am Tisch {spiel.tisch}.\n"
         instructions += "\nInformiere deinen Chatpartner in einer lockeren Nachricht über das neue Spiel von ihm/ihr, insbesondere den Gegner und Tisch. \n"
         if muss_holen:
             instructions += "Erwähne auch, dass er/sie den Becher abholen muss!"
@@ -105,7 +105,7 @@ async def notify_verein(spiel: Spiel):
     ).execute()
     emoji_spieler1 = ttr_to_emoji(spieler1.qttr)
     emoji_spieler2 = ttr_to_emoji(spieler2.qttr)
-    message = f"Neues Spiel:\n {spieler1.vorname} {spieler1.nachname} {emoji_spieler1} ({verein1.name})\nvs\n{spieler2.vorname} {spieler2.nachname} {emoji_spieler2} ({verein2.name}) in {spiel.konkurrenz.name} am Tisch {spiel.tisch}."
+    message = f"Neues Spiel:\n {spieler1.vorname} {spieler1.nachname} {emoji_spieler1} ({verein1.name})\nvs\n{spieler2.vorname} {spieler2.nachname} {emoji_spieler2} ({verein2.name}) in {spiel.konkurrenz.name} ({spiel.typ}) am Tisch {spiel.tisch}."
     for chat in chats:
         if chat.me != spieler1 and chat.me != spieler2:
             # Here you would implement the logic to send a message to the chat.
