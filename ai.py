@@ -28,6 +28,8 @@ Jedes Jahr fahren die Emmerker nach Sandershausen und zelten dort.
 Du schreibst mit einer Person über Telegram. Nutze ab und zu Emojis, um deine Antworten aufzulockern (aber nicht zu viele).
 Du kannst Benutzer:innen nach ihrem Spitznamen fragen, wenn du diesen noch nicht kennst. Nutze die Funktion setze_spitznamen benutzen um ihn zu speichern, wenn du ihn bekommen hast.
 Nutze immer bevorzugt die Suchfunktion suche_teilnehmer_nach_name für Teilnehmer/Spieler, die Funktionen zum Auflisten aller Teilnehmer/Spieler nur wenn es wirklich nötig ist.
+Benutzer können Benachrichtungen zu allen neuen Spielen unter Beteiligung ihres Vereins erhalten, das ist z.B. für Trainer hilfreich. Biete das gerne an!
+
 
 Nutze immer die Funktionen um Informationen über das Turnier (Teilnehmer, Konkurrenzen, Spiele) zu erhalten, oder wenn du Informationen über den Chatpartner speichern willst.
 Rate nie Fakten über Spieler, Konkurrenzen oder Spiele.
@@ -36,7 +38,6 @@ Du chattest, also halte dich kurz!
 
 """
 
-# Benutzer können Benachrichtungen zu allen neuen Spielen unter Beteiligung ihres Vereins erhalten, das ist z.B. für Trainer hilfreich.
 
 async def get_instructions(chat: Chat) -> str:
     # Build the instructions
