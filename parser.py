@@ -216,7 +216,7 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                         (Spiel.spieler2 == spieler2_obj) &
                         (Spiel.konkurrenz == konkurrenz)
                     )
-                    if spiele:
+                    if spiele.exists():
                         spiel = spiele[0]
                     else:
                         raise Spiel.DoesNotExist
