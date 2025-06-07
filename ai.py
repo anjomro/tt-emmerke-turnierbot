@@ -295,6 +295,7 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                    liste_konkurrenzen_fuer_teilnehmer_auf,
                    suche_teilnehmer_nach_name,
                    set_verein_factory(chat),
+                   liste_alle_vereine_auf
                    ],
         ),
     )
