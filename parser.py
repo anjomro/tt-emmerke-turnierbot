@@ -56,6 +56,20 @@ async def get_teilnehmer_by_name(name: str) -> Teilnehmer:
     """
     Find a teilnehmer by "Nachname, Vorname" format.
     """
+    if name.lower() == "unbekannt":
+        # Create a dummy participant for "Unbekannt" if not already exists
+        try:
+            teilnehmer = Teilnehmer.get(Teilnehmer.nachname == "los", Teilnehmer.vorname == "Frei")
+            return teilnehmer
+        except Teilnehmer.DoesNotExist:
+            verein, _ = Verein.get_or_create(name="Freilos")
+            teilnehmer = Teilnehmer.create(
+                nachname="los",
+                vorname="Frei",
+                qttr=0,
+                verein=verein
+            )
+            return teilnehmer
     try:
         # Split the name into last and first name
         if name.count(', ') != 1:
@@ -211,18 +225,14 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                     print(f"Error finding competition for klasse {klasse}: {e}")
 
                 try:
-                    spiele = Spiel.select(
-                        (Spiel.spieler1_id == spieler1_obj.id) &
-                        (Spiel.spieler2_id == spieler2_obj.id) &
-                        (Spiel.konkurrenz_id == konkurrenz.id)
+                    game = Spiel.get(
+                        (Spiel.spieler1 == spieler1_obj) &
+                        (Spiel.spieler2 == spieler2_obj) &
+                        (Spiel.konkurrenz == konkurrenz)
                     )
-                    if spiele.count() > 0:
-                        spiel = spiele.first()
-                    else:
-                        raise Spiel.DoesNotExist
                     # print(f"Found existing game: {spiel}")
                 except Spiel.DoesNotExist:
-                    spiel = Spiel.create(
+                    game = Spiel.create(
                         tisch=-1,  # Tisch is not relevant for ended games
                         spieler1_id=spieler1_obj.id,
                         spieler2_id=spieler2_obj.id,
@@ -230,15 +240,15 @@ async def fetch_active_tables(context: ContextTypes.DEFAULT_TYPE):
                         typ=typ
                     )
                     print(f"Found new ended game: {spiel}")
-                if not spiel.end:
-                    if not spiel.tisch:
-                        spiel.tisch = -1
+                if not game.end:
+                    if not game.tisch:
+                        game.tisch = -1
                     # Set end datetime
-                    spiel.end = datetime.combine(datetime.today(), end_game_time)
-                    spiel.ergebnis_satz = result_sets
-                    spiel.ergebnis_punkte = result_points
-                    spiel.save()
-                    print(f"Saved ended game: {spiel.spieler1.nachname} - {spiel.spieler2.nachname} in {spiel.konkurrenz.name} with result {spiel.ergebnis_satz}")
+                    game.end = datetime.combine(datetime.today(), end_game_time)
+                    game.ergebnis_satz = result_sets
+                    game.ergebnis_punkte = result_points
+                    game.save()
+                    print(f"Saved ended game: {game.spieler1.nachname} - {game.spieler2.nachname} in {game.konkurrenz.name} with result {game.ergebnis_satz}")
 
     else:
         print("No ended games found.")
